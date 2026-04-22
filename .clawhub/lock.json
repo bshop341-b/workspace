@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "humanizer": {
+      "version": "1.0.0",
+      "installedAt": 1776822263387
+    },
+    "obsidian": {
+      "version": "1.0.0",
+      "installedAt": 1776822323094
+    },
+    "github": {
+      "version": "1.0.0",
+      "installedAt": 1776822361072
+    },
+    "self-improving-agent": {
+      "version": "3.0.16",
+      "installedAt": 1776822408865
+    },
+    "api-gateway": {
+      "version": "1.0.84",
+      "installedAt": 1776822731094
+    }
+  }
+}
