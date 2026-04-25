@@ -37,3 +37,32 @@ When configuring cron delivery for WhatsApp, always set `delivery.to` to a real 
 - **Notes**: Updated both WhatsApp cron jobs to use the direct E.164 target `+5216642800707` instead of `default`.
 
 ---
+## [ERR-20260425-001] github-push-permissions
+
+**Logged**: 2026-04-25T19:00:00Z
+**Priority**: high
+**Status**: pending
+**Area**: infra
+
+### Summary
+Pushing changes to rfcku/helm-charts failed because the configured GitHub identity only had write access to bshop341-b/argocd.
+
+### Error
+```
+remote: Permission to rfcku/helm-charts.git denied to bshop341-b.
+fatal: unable to access 'https://github.com/rfcku/helm-charts.git/': The requested URL returned error: 403
+```
+
+### Context
+- Operation attempted: push chart changes adding imagePullSecrets support to rfcku/helm-charts
+- The same session could push successfully to bshop341-b/argocd
+- This indicates cross-repo permission mismatch, not a generic git or network failure
+
+### Suggested Fix
+Check which GitHub account/token `gh` is using before attempting repo writes, and verify it has write access to the destination repository.
+
+### Metadata
+- Reproducible: yes
+- Related Files: charts/ditto/charts/apis/templates/deployment.yaml, charts/ditto/charts/apis/values.yaml
+
+---
