@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-26T01:39:12.297Z",
+  "entries": {
+    "memory:memory/2026-04-25.md:1:16": {
+      "key": "memory:memory/2026-04-25.md:1:16",
+      "path": "memory/2026-04-25.md",
+      "startLine": 1,
+      "endLine": 16,
+      "source": "memory",
+      "snippet": "# 2026-04-25 - User set new communication preferences: keep replies short and summarized by default, speak casually like a human, avoid always ending with next-step suggestions, and use emojis/GIFs/images only when they fit naturally. # 2026-04-25 - User set new communication preferences: keep replies short and summarized by default, speak casually like a human, avoid always ending with next-step suggestions, and use emojis/GIFs/images only when they fit naturally. - Canonical local GitHub mirror path is `~/.openclaw/workspace/github`, not `~/.openclaw/github`. - Updated the Obsidian vault to reflect the new GitHub mirror path, with GitHub notes acting as technical project sheets. - Ensure",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4092445760965347,
+      "maxScore": 0.4092445760965347,
+      "firstRecalledAt": "2026-04-26T01:39:12.297Z",
+      "lastRecalledAt": "2026-04-26T01:39:12.297Z",
+      "queryHashes": [
+        "abe83ced1456"
+      ],
+      "recallDays": [
+        "2026-04-25"
+      ],
+      "conceptTags": [
+        "next-step",
+        "emojis/gifs/images",
+        "openclaw/workspace/github",
+        "openclaw/github",
+        "user",
+        "set",
+        "new",
+        "communication"
+      ]
+    },
+    "memory:memory/2026-04-25.md:11:22": {
+      "key": "memory:memory/2026-04-25.md:11:22",
+      "path": "memory/2026-04-25.md",
+      "startLine": 11,
+      "endLine": 22,
+      "source": "memory",
+      "snippet": "- `ditto-apis` in Argo CD was repaired and is now `Synced + Healthy`; added a simple GitOps-managed `ditto-mongodb` app and kept app secrets manual because there is still no GitOps-safe secret management stack installed. # 2026-04-25 - User set new communication preferences: keep replies short and summarized by default, speak casually like a human, avoid always ending with next-step suggestions, and use emojis/GIFs/images only when they fit naturally. # 2026-04-25 - User set new communication preferences: keep replies short and summarized by default, speak casually like a human, avoid always ending with next-step suggestions, and use emojis/GIFs/images only when they fit naturally. - Canon",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.40479869246482847,
+      "maxScore": 0.40479869246482847,
+      "firstRecalledAt": "2026-04-26T01:39:12.297Z",
+      "lastRecalledAt": "2026-04-26T01:39:12.297Z",
+      "queryHashes": [
+        "abe83ced1456"
+      ],
+      "recallDays": [
+        "2026-04-25"
+      ],
+      "conceptTags": [
+        "ditto-apis",
+        "gitops-managed",
+        "ditto-mongodb",
+        "gitops-safe",
+        "next-step",
+        "emojis/gifs/images",
+        "ditto",
+        "apis"
+      ]
+    }
+  }
+}
