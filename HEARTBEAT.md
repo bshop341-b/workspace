@@ -8,3 +8,5 @@
 
 # Heartbeat checklist
 
+- Check the obsidian vault root TASKS for task to work on.
+- If stuck with something announce it through whatsapp main channel.

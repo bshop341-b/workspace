@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-26T01:39:12.297Z",
+  "updatedAt": "2026-04-27T05:41:00.789Z",
   "entries": {
     "memory:memory/2026-04-25.md:1:16": {
       "key": "memory:memory/2026-04-25.md:1:16",
@@ -9,18 +9,20 @@
       "endLine": 16,
       "source": "memory",
       "snippet": "# 2026-04-25 - User set new communication preferences: keep replies short and summarized by default, speak casually like a human, avoid always ending with next-step suggestions, and use emojis/GIFs/images only when they fit naturally. # 2026-04-25 - User set new communication preferences: keep replies short and summarized by default, speak casually like a human, avoid always ending with next-step suggestions, and use emojis/GIFs/images only when they fit naturally. - Canonical local GitHub mirror path is `~/.openclaw/workspace/github`, not `~/.openclaw/github`. - Updated the Obsidian vault to reflect the new GitHub mirror path, with GitHub notes acting as technical project sheets. - Ensure",
-      "recallCount": 1,
+      "recallCount": 2,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.4092445760965347,
+      "totalScore": 0.7080990463495254,
       "maxScore": 0.4092445760965347,
       "firstRecalledAt": "2026-04-26T01:39:12.297Z",
-      "lastRecalledAt": "2026-04-26T01:39:12.297Z",
+      "lastRecalledAt": "2026-04-26T22:53:33.676Z",
       "queryHashes": [
-        "abe83ced1456"
+        "abe83ced1456",
+        "8021f2961d7f"
       ],
       "recallDays": [
-        "2026-04-25"
+        "2026-04-25",
+        "2026-04-26"
       ],
       "conceptTags": [
         "next-step",
@@ -62,6 +64,191 @@
         "emojis/gifs/images",
         "ditto",
         "apis"
+      ]
+    },
+    "memory:memory/2026-04-26.md:12:16": {
+      "key": "memory:memory/2026-04-26.md:12:16",
+      "path": "memory/2026-04-26.md",
+      "startLine": 12,
+      "endLine": 16,
+      "source": "memory",
+      "snippet": "- UI did not show new posts even though API returned them because the Next.js/Node server-side fetches to `https://api.ditto.local` failed TLS verification (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`). Applied a workaround in `github/argocd/values/ditto/ui/values.yaml` by setting `NODE_TLS_REJECT_UNAUTHORIZED=\"0\"`; commit `3581a99`. Also noted the UI home/feed uses a ~300s cache/prerender window, so fresh posts may take up to 5 minutes to appear. - Even after setting `NEXT_PUBLIC_API_URL=https://api.ditto.local/v1` in Argo values and verifying the live `ditto-ui` deployment env, the browser-side UI still requested relative URLs like `https://ditto.local/posts?page=1&sort=upvoted&limit=10`. Durable di",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.7568560659885406,
+      "maxScore": 0.3869235962629318,
+      "firstRecalledAt": "2026-04-26T19:52:52.962Z",
+      "lastRecalledAt": "2026-04-26T21:10:46.552Z",
+      "queryHashes": [
+        "f567f7837b8d",
+        "b84e9de611ef"
+      ],
+      "recallDays": [
+        "2026-04-26"
+      ],
+      "conceptTags": [
+        "next.js/node",
+        "server-side",
+        "api.ditto.local",
+        "unable-to-verify-leaf-signature",
+        "node-tls-reject-unauthorized",
+        "home/feed",
+        "cache/prerender",
+        "next-public-api-url"
+      ]
+    },
+    "memory:memory/2026-04-26.md:25:29": {
+      "key": "memory:memory/2026-04-26.md:25:29",
+      "path": "memory/2026-04-26.md",
+      "startLine": 25,
+      "endLine": 29,
+      "source": "memory",
+      "snippet": "- UI did not show new posts even though API returned them because the Next.js/Node server-side fetches to `https://api.ditto.local` failed TLS verification (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`). Applied a workaround in `github/argocd/values/ditto/ui/values.yaml` by setting `NODE_TLS_REJECT_UNAUTHORIZED=\"0\"`; commit `3581a99`. Also noted the UI home/feed uses a ~300s cache/prerender window, so fresh posts may take up to 5 minutes to appear. - Even after setting `NEXT_PUBLIC_API_URL=https://api.ditto.local/v1` in Argo values and verifying the live `ditto-ui` deployment env, the browser-side UI still requested relative URLs like `https://ditto.local/posts?page=1&sort=upvoted&limit=10`. Durable di",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.7648308813571929,
+      "maxScore": 0.3867583096027374,
+      "firstRecalledAt": "2026-04-26T19:52:52.962Z",
+      "lastRecalledAt": "2026-04-26T21:10:46.552Z",
+      "queryHashes": [
+        "f567f7837b8d",
+        "b84e9de611ef"
+      ],
+      "recallDays": [
+        "2026-04-26"
+      ],
+      "conceptTags": [
+        "next.js/node",
+        "server-side",
+        "api.ditto.local",
+        "unable-to-verify-leaf-signature",
+        "node-tls-reject-unauthorized",
+        "home/feed",
+        "cache/prerender",
+        "next-public-api-url"
+      ]
+    },
+    "memory:memory/2026-04-26.md:6:11": {
+      "key": "memory:memory/2026-04-26.md:6:11",
+      "path": "memory/2026-04-26.md",
+      "startLine": 6,
+      "endLine": 11,
+      "source": "memory",
+      "snippet": "- UI did not show new posts even though API returned them because the Next.js/Node server-side fetches to `https://api.ditto.local` failed TLS verification (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`). Applied a workaround in `github/argocd/values/ditto/ui/values.yaml` by setting `NODE_TLS_REJECT_UNAUTHORIZED=\"0\"`; commit `3581a99`. Also noted the UI home/feed uses a ~300s cache/prerender window, so fresh posts may take up to 5 minutes to appear. ## Ditto infra and UI fixes - Fixed `https://api.ditto.local/v1/posts` 404 by removing the bad ingress patch from `github/argocd/values/ditto/platform/kustomization.yaml`; commit `2aa61eb` (`fix(ditto): preserve api ingress paths`). Root cause was `values/di",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.37089149951934813,
+      "maxScore": 0.37089149951934813,
+      "firstRecalledAt": "2026-04-26T19:52:52.962Z",
+      "lastRecalledAt": "2026-04-26T19:52:52.962Z",
+      "queryHashes": [
+        "f567f7837b8d"
+      ],
+      "recallDays": [
+        "2026-04-26"
+      ],
+      "conceptTags": [
+        "next.js/node",
+        "server-side",
+        "api.ditto.local",
+        "unable-to-verify-leaf-signature",
+        "node-tls-reject-unauthorized",
+        "home/feed",
+        "cache/prerender",
+        "api.ditto.local/v1/posts"
+      ]
+    },
+    "memory:memory/2026-04-26.md:19:24": {
+      "key": "memory:memory/2026-04-26.md:19:24",
+      "path": "memory/2026-04-26.md",
+      "startLine": 19,
+      "endLine": 24,
+      "source": "memory",
+      "snippet": "- UI did not show new posts even though API returned them because the Next.js/Node server-side fetches to `https://api.ditto.local` failed TLS verification (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`). Applied a workaround in `github/argocd/values/ditto/ui/values.yaml` by setting `NODE_TLS_REJECT_UNAUTHORIZED=\"0\"`; commit `3581a99`. Also noted the UI home/feed uses a ~300s cache/prerender window, so fresh posts may take up to 5 minutes to appear. ## Ditto infra and UI fixes - Fixed `https://api.ditto.local/v1/posts` 404 by removing the bad ingress patch from `github/argocd/values/ditto/platform/kustomization.yaml`; commit `2aa61eb` (`fix(ditto): preserve api ingress paths`). Root cause was `values/di",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.37089149951934813,
+      "maxScore": 0.37089149951934813,
+      "firstRecalledAt": "2026-04-26T19:52:52.962Z",
+      "lastRecalledAt": "2026-04-26T19:52:52.962Z",
+      "queryHashes": [
+        "f567f7837b8d"
+      ],
+      "recallDays": [
+        "2026-04-26"
+      ],
+      "conceptTags": [
+        "next.js/node",
+        "server-side",
+        "api.ditto.local",
+        "unable-to-verify-leaf-signature",
+        "node-tls-reject-unauthorized",
+        "home/feed",
+        "cache/prerender",
+        "api.ditto.local/v1/posts"
+      ]
+    },
+    "memory:memory/2026-04-25.md:21:28": {
+      "key": "memory:memory/2026-04-25.md:21:28",
+      "path": "memory/2026-04-25.md",
+      "startLine": 21,
+      "endLine": 28,
+      "source": "memory",
+      "snippet": "- Added GitHub-backed projects to the Obsidian Projects section: Mytzuko, Borders, Metal API, Ditto, Stitching Octopus, and updated Medio Punto to the correct mirror path. - `ditto-apis` in Argo CD was repaired and is now `Synced + Healthy`; added a simple GitOps-managed `ditto-mongodb` app and kept app secrets manual because there is still no GitOps-safe secret management stack installed. - Ditto now uses a dedicated GitOps layout in the Argo repo: Ditto apps live under `applications/ditto/`, Ditto platform resources under `workloads/ditto-platform/`, and Helm overrides under `values/ditto/`. - The Ditto API is exposed through ingress-nginx at `https://api.ditto.local` with cert-manager TLS",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.36680675148963926,
+      "maxScore": 0.36680675148963926,
+      "firstRecalledAt": "2026-04-26T21:10:46.552Z",
+      "lastRecalledAt": "2026-04-26T21:10:46.552Z",
+      "queryHashes": [
+        "b84e9de611ef"
+      ],
+      "recallDays": [
+        "2026-04-26"
+      ],
+      "conceptTags": [
+        "github-backed",
+        "ditto-apis",
+        "gitops-managed",
+        "ditto-mongodb",
+        "gitops-safe",
+        "applications/ditto",
+        "workloads/ditto-platform",
+        "values/ditto"
+      ]
+    },
+    "memory:memory/2026-04-22.md:1:4": {
+      "key": "memory:memory/2026-04-22.md:1:4",
+      "path": "memory/2026-04-22.md",
+      "startLine": 1,
+      "endLine": 4,
+      "source": "memory",
+      "snippet": "# 2026-04-22 - rfcku added me to a WhatsApp group with id `120363429037120942@g.us`.",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.37971550822257993,
+      "maxScore": 0.37971550822257993,
+      "firstRecalledAt": "2026-04-27T05:41:00.789Z",
+      "lastRecalledAt": "2026-04-27T05:41:00.789Z",
+      "queryHashes": [
+        "ebeee2d64308"
+      ],
+      "recallDays": [
+        "2026-04-26"
+      ],
+      "conceptTags": [
+        "g.us",
+        "rfcku",
+        "added",
+        "whatsapp",
+        "group"
       ]
     }
   }
