@@ -309,3 +309,65 @@ When patching files in containers with read-only or non-writable directories, wr
 - See Also: ERR-20260425-001
 
 ---
+
+## [ERR-20260427-002] vercel-cli-auth
+
+**Logged**: 2026-04-27T16:39:00Z
+**Priority**: high
+**Status**: pending
+**Area**: infra
+
+### Summary
+A Vercel CLI attempt failed because this environment is not logged into Vercel and no token was provided.
+
+### Error
+```
+Error: No existing credentials found. Please run `vercel login` or pass "--token"
+Learn More: https://err.sh/vercel/no-credentials-found
+```
+
+### Context
+- Command attempted: `npx vercel`
+- The CLI installed and started normally, then exited after checking credentials
+- `npm` also warned about unsupported engines under Node `v25.9.0`, but the hard blocker was missing Vercel auth
+
+### Suggested Fix
+Authenticate Vercel in this environment with `vercel login` or provide a valid `--token` before retrying deployment or project inspection commands.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+
+---
+## [ERR-20260427-001] musicbrainz_ingest_connectivity
+
+**Logged**: 2026-04-27T21:40:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: backend
+
+### Summary
+MusicBrainz batch ingestion failed on first live fetch with TLS connection reset.
+
+### Error
+```
+TypeError: fetch failed
+cause: Client network socket disconnected before secure TLS connection was established
+code: ECONNRESET
+host: musicbrainz.org
+port: 443
+```
+
+### Context
+- Command attempted: `INGEST_TARGET_COUNT=10 MUSICBRAINZ_USER_AGENT='metal-api/0.1.0 (openclaw@example.com)' npm run ingest:musicbrainz`
+- Repo: `~/.openclaw/workspace/github/rfcku/metal-api`
+- The new ingestion script wrote failure metadata but could not complete a live batch.
+
+### Suggested Fix
+Retry with a confirmed User-Agent and add retry/backoff around MusicBrainz fetches, or verify outbound connectivity/TLS from this host before depending on the script for the first real dataset run.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: github/rfcku/metal-api/scripts/ingest-musicbrainz.mjs
+
+---

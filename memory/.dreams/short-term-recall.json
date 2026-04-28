@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-27T05:41:00.789Z",
+  "updatedAt": "2026-04-28T02:21:05.952Z",
   "entries": {
     "memory:memory/2026-04-25.md:1:16": {
       "key": "memory:memory/2026-04-25.md:1:16",
@@ -230,18 +230,22 @@
       "endLine": 4,
       "source": "memory",
       "snippet": "# 2026-04-22 - rfcku added me to a WhatsApp group with id `120363429037120942@g.us`.",
-      "recallCount": 1,
+      "recallCount": 4,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.37971550822257993,
-      "maxScore": 0.37971550822257993,
+      "totalScore": 1.495971468091011,
+      "maxScore": 0.399292454123497,
       "firstRecalledAt": "2026-04-27T05:41:00.789Z",
-      "lastRecalledAt": "2026-04-27T05:41:00.789Z",
+      "lastRecalledAt": "2026-04-28T02:21:05.952Z",
       "queryHashes": [
-        "ebeee2d64308"
+        "ebeee2d64308",
+        "26a46ab64979",
+        "3142523d8498",
+        "1a553f82395a"
       ],
       "recallDays": [
-        "2026-04-26"
+        "2026-04-26",
+        "2026-04-27"
       ],
       "conceptTags": [
         "g.us",
@@ -249,6 +253,37 @@
         "added",
         "whatsapp",
         "group"
+      ]
+    },
+    "memory:memory/2026-04-27.md:1:6": {
+      "key": "memory:memory/2026-04-27.md:1:6",
+      "path": "memory/2026-04-27.md",
+      "startLine": 1,
+      "endLine": 6,
+      "source": "memory",
+      "snippet": "# 2026-04-27 - User shared contact info for mytzuko: - WhatsApp: +52 664 123 5340 - Instagram: https://www.instagram.com/mytzuko.a.nidome?igsh=MWI4dHF4c2J0bzdnZQ==",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.5424112692475318,
+      "maxScore": 0.5424112692475318,
+      "firstRecalledAt": "2026-04-27T14:43:28.036Z",
+      "lastRecalledAt": "2026-04-27T14:43:28.036Z",
+      "queryHashes": [
+        "85bbe1557f27"
+      ],
+      "recallDays": [
+        "2026-04-27"
+      ],
+      "conceptTags": [
+        "user",
+        "shared",
+        "contact",
+        "info",
+        "mytzuko",
+        "whatsapp",
+        "instagram",
+        "https"
       ]
     }
   }
