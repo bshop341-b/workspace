@@ -4,6 +4,36 @@ Command failures and integration errors.
 
 ---
 
+## [ERR-20260428-001] background_exec_sigterm_hosts
+
+**Logged**: 2026-04-28T16:00:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+An async background exec against `nctto.local` and `mytzuko.local` terminated with `SIGTERM` before producing actionable output.
+
+### Error
+```
+Process exited with signal SIGTERM.
+```
+
+### Context
+- Operation attempted: previously launched async exec session `crisp-sable`
+- Visible log output only showed host headers: `## nctto.local` and `## mytzuko.local`
+- The command summary in the process list was truncated to `for host`, so the exact original command was not recoverable from the surfaced event alone
+- No user-facing follow-up was sent because the completion event explicitly said to handle the result internally
+
+### Suggested Fix
+When launching long-running or multi-host background execs, emit the full command and enough structured logging to diagnose early termination, and check whether the process was intentionally canceled, timed out, or killed by the host.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: .learnings/ERRORS.md
+
+---
+
 ## [ERR-20260427-001] git-push
 
 **Logged**: 2026-04-27T01:28:43Z
@@ -369,5 +399,214 @@ Retry with a confirmed User-Agent and add retry/backoff around MusicBrainz fetch
 ### Metadata
 - Reproducible: unknown
 - Related Files: github/rfcku/metal-api/scripts/ingest-musicbrainz.mjs
+
+---
+## [ERR-20260428-001] sed
+
+**Logged**: 2026-04-28T14:09:00Z
+**Priority**: low
+**Status**: pending
+**Area**: docs
+
+### Summary
+Used an invalid sed substitution while listing repos under the workspace.
+
+### Error
+```text
+sed: 1: "s#^#/##": bad flag in substitute command: '#'
+```
+
+### Context
+- Command attempted: `find /Users/rfcku/.openclaw/workspace/github -maxdepth 2 -mindepth 2 -type d -name .git -prune -exec dirname {} \\; | sed 's#^#/##' | sed 's#^/Users/rfcku/.openclaw/workspace/github/##' | sort`
+- The first `sed` expression was malformed and unnecessary.
+
+### Suggested Fix
+Remove the bad `sed` step and trim the prefix with a single valid substitution.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+
+---
+## [ERR-20260428-002] docker-buildx
+
+**Logged**: 2026-04-28T14:48:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+Attempting to containerize the Mytzuko and Stitching Octopus Next.js apps via Docker hung silently long enough that the async exec sessions were later killed by the harness.
+
+### Error
+```text
+Exec failed (calm-roo, signal SIGTERM) :: HOSTS CHECK ## mytzuko.local ## stitching-octopus.local
+Exec failed (ember-ha, signal SIGKILL)
+```
+
+### Context
+- Operations attempted: `docker build -t local/mytzuko:dev .` and `docker build -t local/stitching-octopus:dev .` after adding Dockerfiles for both repos
+- A direct `docker pull node:22-alpine` also produced no progress output for an extended period in this runtime
+- The actual goal was to restore `.local` routes on the existing kind cluster, not necessarily to finish image packaging first
+- A faster workaround succeeded: keep the Next.js apps running on fixed host ports and route cluster ingress to `host.docker.internal` with `ExternalName` services
+
+### Suggested Fix
+When local `.local` recovery is urgent, probe Docker feasibility quickly. If image pulls or builds stall, pivot to host-backed previews through ingress instead of waiting on long silent Docker operations.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: github/nctto/mytzuko/Dockerfile, github/rfcku/stitchingoctopus/Dockerfile, github/argocd/workloads/local-sites
+
+---
+## [ERR-20260428-003] exec-event-elevation
+
+**Logged**: 2026-04-28T15:12:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+An exec-event heartbeat session could not perform the final `/etc/hosts` edit because elevated exec is disabled for this provider.
+
+### Error
+```text
+elevated is not available right now (runtime=direct).
+Failing gates: allowFrom (tools.elevated.allowFrom.<provider> / agents.list[].tools.elevated.allowFrom.<provider>)
+Context: provider=exec-event session=agent:main:cron:296ab27d-a8a5-4d0f-a693-2df1a8369b0a:heartbeat
+```
+
+### Context
+- Operation attempted: append `mytzuko.local` and `stitching-octopus.local` to the existing `172.18.255.200 ...` line in `/etc/hosts`
+- Verification before the failure showed both hosts already return `HTTP/2 200` when resolved to `172.18.255.200`
+- The remaining blocker was only the privileged hosts-file edit, not cluster, TLS, or app readiness
+
+### Suggested Fix
+For exec-event or heartbeat runs, do not assume sudo/host-file edits are available. Either hand off the exact manual command to the user, switch to a runtime that supports elevation, or defer the final privileged step to a human-run shell.
+
+### Metadata
+- Reproducible: yes
+- Related Files: /etc/hosts, HEARTBEAT.md, .learnings/ERRORS.md
+
+---
+## [ERR-20260428-004] recursive-grep-sigkill
+
+**Logged**: 2026-04-28T15:16:40Z
+**Priority**: low
+**Status**: pending
+**Area**: docs
+
+### Summary
+A broad `grep -R` over the workspace plus BishopVault was killed by the harness before it returned any matches.
+
+### Error
+```text
+Exec failed (nimble-p, signal SIGKILL)
+```
+
+### Context
+- Command attempted: `grep -R "6642800707\|whatsapp main\|main channel" -n /Users/rfcku/.openclaw/workspace /Users/rfcku/Documents/BishopVault 2>/dev/null | head -100`
+- The search was meant to locate the WhatsApp main-channel reference and related blocker notes
+- A follow-up `rg -n --hidden -S` with targeted excludes returned the needed matches immediately, including the blocker report and task notes
+
+### Suggested Fix
+Prefer `rg` with explicit exclude globs for wide vault/workspace searches. Avoid `grep -R` over both trees in heartbeat or exec-event runs because it can be slow enough to get killed before producing output.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: .learnings/ERRORS.md, HEARTBEAT.md, /Users/rfcku/Documents/BishopVault/Reports/Cron seguimiento bloqueos 2026-04-28.md
+
+---
+## [ERR-20260428-005] atlas_tls_handshake_rejected
+
+**Logged**: 2026-04-28T15:55:00Z
+**Priority**: high
+**Status**: pending
+**Area**: infra
+
+### Summary
+Trying to use the Atlas URI from `~/.openclaw/.env` for the kanban backend failed because Atlas rejected the TLS handshake before the driver could select a server.
+
+### Error
+```text
+MongoServerSelectionError: ... tlsv1 alert internal error ... SSL alert number 80
+```
+
+### Context
+- Operation attempted: verify and use the `MONGODB_URI` from `~/.openclaw/.env` with `kanban-dashboard-backend`
+- Direct Node driver connection and `openssl s_client` to the Atlas shard host both failed with the same TLS alert
+- Current public IP during the test was `189.223.36.251`
+- This pattern matches Atlas access-list or cluster-side network rejection more than an app-code issue
+
+### Suggested Fix
+Check the Atlas cluster status and Network Access allowlist, then add the current public IP (or the correct egress IP/range) before retrying the backend connection.
+
+### Metadata
+- Reproducible: yes
+- Related Files: /Users/rfcku/.openclaw/.env, github/bshop341-b/kanban-dashboard-backend/.env.example, .learnings/ERRORS.md
+
+---
+## [ERR-20260428-006] lumenforge_local_start_authjs_mongo
+
+**Logged**: 2026-04-28T16:26:30Z
+**Priority**: high
+**Status**: resolved
+**Area**: config
+
+### Summary
+A production-mode local start of `lumenforge` failed because Auth.js rejected `https://nctto.local` as an untrusted host, while the app was also pointed at a non-running local MongoDB instance.
+
+### Error
+```text
+[auth][error] UntrustedHost: Host must be trusted. URL was: https://nctto.local/api/auth/session
+MongoServerSelectionError: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017
+```
+
+### Context
+- Commands involved: `npm run build` and `MONGODB_URI=mongodb://localhost:27017/test npm run start -- --hostname 0.0.0.0 --port 3104`
+- Repo: `github/bshop341-b/lumenforge`
+- `next build` completed, but page data collection and runtime requests emitted repeated Mongo connection failures
+- `next start` then surfaced the Auth.js host-trust error when the app served `nctto.local` in production mode without `AUTH_URL`, `AUTH_TRUST_HOST`, or explicit `trustHost: true`
+- There was no `.env` file in the repo root, only `.env.example`
+
+### Suggested Fix
+Set Auth.js host trust explicitly for local/preview environments (`trustHost: true` or `AUTH_TRUST_HOST=true` / `AUTH_URL=https://nctto.local`) and provide a reachable MongoDB instance before relying on authenticated routes or session polling.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/bshop341-b/lumenforge/src/auth.ts, github/bshop341-b/lumenforge/src/lib/mongodb.ts, github/bshop341-b/lumenforge/.env.example
+
+### Resolution
+- **Resolved**: 2026-04-28T16:33:40Z
+- **Notes**: Patched `src/auth.ts` to pass `secret: env.AUTH_SECRET` and `trustHost: true`, documented `AUTH_URL` / `AUTH_TRUST_HOST` in `.env.example` and `README.md`, rebuilt the app, and verified `GET /api/auth/session` on `Host: nctto.local` now returns `200 null` instead of the Auth.js configuration error. Mongo is still required for real sign-in and DB-backed flows.
+
+---
+## [ERR-20260428-001] exec-elevated-direct-runtime
+
+**Logged**: 2026-04-28T17:28:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+Elevated exec is unavailable in exec-event direct runtime, blocking /etc/hosts updates from heartbeat tasks.
+
+### Error
+```
+elevated is not available right now (runtime=direct).
+Failing gates: allowFrom (tools.elevated.allowFrom.<provider> / agents.list[].tools.elevated.allowFrom.<provider>)
+Context: provider=exec-event session=agent:main:main:heartbeat
+```
+
+### Context
+- Command attempted: `sudo ./scripts/add-local-hosts.sh 172.18.255.200 nctto.local mytzuko.local stitching-octopus.local`
+- Goal: unblock local browser verification for three `.local` sites already live behind ingress.
+- Environment: OpenClaw exec-event heartbeat on main session.
+
+### Suggested Fix
+Use a runtime/provider that permits elevated exec for exec-event heartbeats, or route host-file changes through a user-approved/manual path.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/argocd/scripts/add-local-hosts.sh, HEARTBEAT.md
 
 ---

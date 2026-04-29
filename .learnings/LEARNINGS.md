@@ -96,3 +96,47 @@ If the proper frontend source remains unavailable, prefer a startup patch on the
 - See Also: ERR-20260425-001, ERR-20260426-002
 
 ---
+## [LRN-20260428-001] best_practice
+
+**Logged**: 2026-04-28T14:48:30Z
+**Priority**: high
+**Status**: pending
+**Area**: infra
+
+### Summary
+For kind-based `.local` recovery, the fastest path is often ingress plus `ExternalName` services to `host.docker.internal` on fixed preview ports, with container images deferred until later.
+
+### Details
+The local cluster originally lacked namespaces, services, and ingress for `mytzuko.local` and `stitching-octopus.local`. Building fresh app images through Docker turned out to be slow and unreliable in this runtime, but both Next.js apps already built and served correctly on the host. Switching the cluster manifests to cert-manager certificates plus ingress rules backed by `ExternalName` services targeting `host.docker.internal:3102` and `host.docker.internal:3103` restored HTTPS routing immediately without waiting on registry pulls or kind image loading.
+
+### Suggested Action
+When the goal is to recover local-only hostnames quickly, prefer host-run previews behind ingress first. Use fixed ports, `ExternalName` services, and only circle back to fully containerized deployments once routing is proven and time pressure is lower.
+
+### Metadata
+- Source: error
+- Related Files: github/argocd/workloads/local-sites/mytzuko/service.yaml, github/argocd/workloads/local-sites/stitching-octopus/service.yaml
+- Tags: kind, ingress, externalname, nextjs, local-preview, cert-manager
+
+---
+## [LRN-20260428-002] correction
+
+**Logged**: 2026-04-28T23:28:30Z
+**Priority**: high
+**Status**: pending
+**Area**: infra
+
+### Summary
+Having manifests in the Argo repo worktree is not the same as the sites being visible in Argo CD. They must also be represented by a tracked `Application` path in the remote repo.
+
+### Details
+I told the user the local-sites work was "in argocd/gitops" because the manifests existed under `github/argocd/workloads/local-sites` and had been applied manually with `kubectl apply -k`. The user correctly pointed out the sites were not visible in Argo CD. Inspection showed there was no `Application` for `workloads/local-sites`, and the whole folder plus `applications/ingress/local-sites.yaml` were still untracked locally, so Argo's remote repo view could not render or sync them.
+
+### Suggested Action
+When claiming something is in Argo/GitOps, verify both layers: the manifests exist in the repo path and an Argo `Application` or ApplicationSet actually points at that path in the remote tracked revision.
+
+### Metadata
+- Source: user_feedback
+- Related Files: github/argocd/workloads/local-sites/kustomization.yaml, github/argocd/applications/ingress/local-sites.yaml
+- Tags: argocd, gitops, correction, local-sites
+
+---
