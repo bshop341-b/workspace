@@ -610,3 +610,208 @@ Use a runtime/provider that permits elevated exec for exec-event heartbeats, or 
 - Related Files: github/argocd/scripts/add-local-hosts.sh, HEARTBEAT.md
 
 ---
+## [ERR-20260429-002] obsidian-cli-search-path-only
+
+**Logged**: 2026-04-29T16:04:30Z
+**Priority**: low
+**Status**: pending
+**Area**: docs
+
+### Summary
+Tried to use a non-existent `--path-only` flag with `obsidian-cli search`.
+
+### Error
+```
+Error: unknown flag: --path-only
+```
+
+### Context
+- Command attempted: `obsidian-cli search "Medio Punto" --path-only`
+- Goal: quickly list matching note paths inside the active vault
+- The CLI only supports plain `search`, plus `--editor` and `--vault`
+
+### Suggested Fix
+Use `find` or read the vault directly when exact note paths are needed, and check `obsidian-cli search --help` before assuming path-output flags exist.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+
+---
+## [ERR-20260429-001] kubectl-ditto-react-ssr-log
+
+**Logged**: 2026-04-29T14:27:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+Background `kubectl ditto` exec labeled `ember-sable` exited with SIGTERM while dumping a large minified React DOM server stack, which obscured the actionable app error.
+
+### Error
+```
+Exec failed (ember-sable, signal SIGTERM)
+/app/node_modules/react-dom/cjs/react-dom-server.browser.production.js:2019
+? resumableState.styleResources[href$jscomp$0]
+Process exited with signal SIGTERM.
+```
+
+### Context
+- Background process label/session: `ember-sable`
+- Command family shown by process list: `kubectl ditto`
+- Captured output was dominated by minified `.next` / `react-dom-server.browser.production.js` frames around style resource handling, making the originating application error unclear.
+- Follow-up inspection worked better with `process poll` on the process label than with recursive `rg`, which exploded on bundled assets.
+
+### Suggested Fix
+Rerun the failing `kubectl ditto` workflow with narrower log capture, ideally the originating request/error lines before the React stack flood, and prefer source-mapped or debug-prerender output if this is a Next.js prerender/SSR failure.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: /app/node_modules/react-dom/cjs/react-dom-server.browser.production.js
+
+---
+## [ERR-20260429-003] exec-elevated-heartbeat-hosts
+
+**Logged**: 2026-04-29T16:35:10Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+A heartbeat-triggered attempt to add local site hostnames to `/etc/hosts` could not use `exec` with `elevated=true` because elevated tools are disabled for the `heartbeat` provider in this runtime.
+
+### Error
+```
+elevated is not available right now (runtime=direct).
+Failing gates: allowFrom (tools.elevated.allowFrom.<provider> / agents.list[].tools.elevated.allowFrom.<provider>)
+Context: provider=heartbeat session=agent:main:main:heartbeat
+Fix-it keys:
+- tools.elevated.enabled
+- tools.elevated.allowFrom.<provider>
+- agents.list[].tools.elevated.enabled
+- agents.list[].tools.elevated.allowFrom.<provider>
+```
+
+### Context
+- Command attempted: Python append to `/etc/hosts` with `elevated=true`
+- Goal: unblock local hostname resolution for `medio-punto.local`, `mytzuko.local`, `stitching-octopus.local`, and `nctto.local`
+- Verification before the failure showed the ingress-backed sites already answer `HTTP/2 200` when forced with `curl --resolve ... 172.18.255.200`
+- The blocker is capability gating in heartbeat sessions, not site availability or ingress routing
+
+### Suggested Fix
+Use a non-heartbeat session/provider with elevated tool access, or adjust OpenClaw policy to allow `tools.elevated` for the `heartbeat` provider before trying to modify `/etc/hosts` from heartbeat automation.
+
+### Metadata
+- Reproducible: yes
+- Related Files: /etc/hosts, .learnings/ERRORS.md
+
+---
+## [ERR-20260429-004] lumenforge_local_mongo_missing_listener
+
+**Logged**: 2026-04-29T16:56:44Z
+**Priority**: high
+**Status**: resolved
+**Area**: infra
+
+### Summary
+Recurring background local preview starts for `lumenforge` crashed because `MONGODB_URI=mongodb://localhost:27017/test` was set while nothing was listening on port `27017`.
+
+### Error
+```text
+MongoServerSelectionError: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017
+```
+
+### Context
+- Failed background sessions included `delta-coral` on port `3104` and `cool-willow` on port `3116`
+- Process logs showed `next start` came up, then died on first Mongo server selection attempt
+- No host MongoDB service or existing Docker Mongo container was listening on `27017`
+- The workspace copy at `github/bshop341-b/lumenforge` is the active repo with installed dependencies
+
+### Suggested Fix
+For local preview workflows that pin `MONGODB_URI` to `mongodb://localhost:27017/test`, ensure a local MongoDB listener exists first, for example by starting a lightweight Docker `mongo:7` container mapped to `27017`.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/bshop341-b/lumenforge/src/lib/mongodb.ts, github/bshop341-b/lumenforge/.env.example
+- See Also: ERR-20260428-006
+
+### Resolution
+- **Resolved**: 2026-04-29T16:56:44Z
+- **Notes**: Started `openclaw-local-mongo` with Docker on `127.0.0.1:27017`, verified `db.adminCommand({ ping: 1 })` returned `{ ok: 1 }`, and confirmed both local preview ports `3104` and `3116` were serving `HTTP 200` again.
+
+---
+## [ERR-20260429-005] lumenforge_preview_restart_false_negative
+
+**Logged**: 2026-04-29T16:58:50Z
+**Priority**: medium
+**Status**: resolved
+**Area**: infra
+
+### Summary
+A follow-up `npm start` attempt for `github/bshop341-b/lumenforge` reported failure because port `3104` was already occupied, but the existing `next-server` in that repo was already healthy.
+
+### Error
+```text
+sh: next: command not found
+Error: listen EADDRINUSE: address already in use :::3104
+```
+
+### Context
+- The active repo is `github/bshop341-b/lumenforge` where `package.json` defines `"start": "next start"`
+- A `next-server (v16.1.6)` process with cwd `/Users/rfcku/.openclaw/workspace/github/bshop341-b/lumenforge` was already listening on `3104`
+- `curl -I http://127.0.0.1:3104` returned `HTTP/1.1 200 OK`
+- The retry surfaced as a failed async command even though the preview target was already up
+
+### Suggested Fix
+Before rerunning `npm start` for this local preview, check whether `3104` is already serving the app. Treat `EADDRINUSE` as a prompt to verify the existing listener instead of blindly retrying.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/bshop341-b/lumenforge/package.json
+- See Also: ERR-20260429-004
+
+### Resolution
+- **Resolved**: 2026-04-29T16:58:50Z
+- **Notes**: Verified PID `65965` was listening on `3104` from the `lumenforge` repo and confirmed the app returned `HTTP 200`, so no restart was needed.
+
+---
+## [ERR-20260429-006] lumenforge_build_missing_mongodb_uri
+
+**Logged**: 2026-04-29T17:35:57Z
+**Priority**: medium
+**Status**: resolved
+**Area**: config
+
+### Summary
+A background `npm run build` for `github/bshop341-b/lumenforge` failed because `src/lib/env.ts` requires `MONGODB_URI` during build-time page data collection for `/bootcamp`.
+
+### Error
+```text
+❌ Invalid environment variables: {
+  MONGODB_URI: [ 'Invalid input: expected string, received undefined' ]
+}
+Error: Failed to collect configuration for /bootcamp
+Error: Failed to collect page data for /bootcamp
+```
+
+### Context
+- Failed async session: `gentle-nudibranch`
+- Command attempted: `npm run build`
+- Repo: `github/bshop341-b/lumenforge`
+- `src/lib/env.ts` validates `MONGODB_URI` eagerly with `z.string().url()` and throws on missing values
+- A follow-up build in the same repo succeeded with `MONGODB_URI=mongodb://localhost:27017/test npm run build`
+- The successful build still emitted `Notion API key or Services DB ID is missing.` warnings, but those did not stop static generation
+
+### Suggested Fix
+For local or CI build verification, load `.env.local` from `.env.example` before `npm run build`, or provide a safe temporary `MONGODB_URI` when only validating the build. If `/bootcamp` can be built without a live database, consider deferring or relaxing that env validation path.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/bshop341-b/lumenforge/src/lib/env.ts, github/bshop341-b/lumenforge/.env.example, github/bshop341-b/lumenforge/README.md
+- See Also: ERR-20260429-004
+
+### Resolution
+- **Resolved**: 2026-04-29T17:35:57Z
+- **Notes**: Confirmed the failure was missing build-time env, then reran the build with a temporary local Mongo URI and got a successful Next.js production build.
+
+---
