@@ -815,3 +815,31 @@ For local or CI build verification, load `.env.local` from `.env.example` before
 - **Notes**: Confirmed the failure was missing build-time env, then reran the build with a temporary local Mongo URI and got a successful Next.js production build.
 
 ---
+## [ERR-20260430-001] python_html_parse
+
+**Logged**: 2026-04-30T09:12:00-07:00
+**Priority**: low
+**Status**: pending
+**Area**: docs
+
+### Summary
+Tried to parse a local HTML page with BeautifulSoup, but `bs4` is not installed in this workspace environment.
+
+### Error
+```
+ModuleNotFoundError: No module named 'bs4'
+```
+
+### Context
+- Command/operation attempted: inline Python parse of `http://127.0.0.1:3104/projects`
+- Input or parameters used: `python3` script importing `from bs4 import BeautifulSoup`
+- Environment details: OpenClaw workspace on macOS, default Python environment
+
+### Suggested Fix
+Prefer stdlib-based HTML checks for quick heartbeat validations, or verify dependency availability before importing third-party parsing libraries.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+
+---
