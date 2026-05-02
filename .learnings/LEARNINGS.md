@@ -140,3 +140,25 @@ When claiming something is in Argo/GitOps, verify both layers: the manifests exi
 - Tags: argocd, gitops, correction, local-sites
 
 ---
+## [LRN-20260501-001] correction
+
+**Logged**: 2026-05-01T21:13:24Z
+**Priority**: critical
+**Status**: pending
+**Area**: infra
+
+### Summary
+When a user asks to create a secret for GitOps, do not commit plaintext credentials to the repo without an explicit confirmation that secrets may live in Git history.
+
+### Details
+I created a Kubernetes secret definition from local environment values and committed it to the GitOps repository. The user then corrected that the secret should not have gone into the commit. The safer default is to keep secrets out of Git, prefer SealedSecrets/SOPS/ExternalSecrets, and if a temporary manual cluster secret is required, label it clearly as temporary.
+
+### Suggested Action
+Before committing any secret material, pause and confirm the storage method. If a secret was already pushed, immediately remove it from the live tree, restore service with a temporary out-of-band secret if needed, and recommend credential rotation plus optional history rewrite.
+
+### Metadata
+- Source: user_feedback
+- Related Files: github/argocd/values/openclaw/cleo/values.yaml
+- Tags: secrets, gitops, security, correction
+
+---

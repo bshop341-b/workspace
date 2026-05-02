@@ -20,6 +20,10 @@
     "api-gateway": {
       "version": "1.0.84",
       "installedAt": 1776822731094
+    },
+    "mempalace": {
+      "version": "1.4.0",
+      "installedAt": 1777660963228
     }
   }
 }

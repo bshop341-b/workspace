@@ -843,3 +843,101 @@ Prefer stdlib-based HTML checks for quick heartbeat validations, or verify depen
 - Related Files: .learnings/ERRORS.md
 
 ---
+## [ERR-20260501-001] git_status_non_repo_obsidian_vault
+
+**Logged**: 2026-05-01T08:24:00-07:00
+**Priority**: low
+**Status**: pending
+**Area**: docs
+
+### Summary
+Tried to run `git status` against the Obsidian vault path even though the vault is not a Git repository.
+
+### Error
+```
+fatal: not a git repository (or any of the parent directories): .git
+```
+
+### Context
+- Operation attempted: compare local repo changes in `github/rfcku/ditto-cli` and note-file changes in `/Users/rfcku/Documents/BishopVault`
+- The code repo status check worked, but the second `git -C` assumed the vault itself was versioned
+- No data loss occurred; the note files were still edited successfully
+
+### Suggested Fix
+When checking note updates under the Obsidian vault, use plain file reads or `ls`/`stat` unless the specific vault path is known to be a Git repo.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+
+---
+## [ERR-20260501-002] mytzuko_preview_sigkill_false_negative
+
+**Logged**: 2026-05-01T09:02:15-07:00
+**Priority**: low
+**Status**: resolved
+**Area**: infra
+
+### Summary
+An async `npm start` for `github/nctto/mytzuko` surfaced as `signal SIGKILL` in exec-event even though the detached `next-server` stayed up and continued serving port `3102`.
+
+### Error
+```text
+Exec failed (swift-tr, signal SIGKILL) :: > mytzuko@0.1.0 start
+> next start
+▲ Next.js 16.1.6 - Local: http://localhost:3102
+✓ Starting...
+✓ Ready in 224ms
+```
+
+### Context
+- Operation attempted: `npm start` for the Mytzuko repo
+- Verification after the async failure showed PID `37882` (`next-server v16.1.6`) still listening on `3102`
+- `lsof -a -p 37882 -d cwd` resolved the process cwd to `/Users/rfcku/.openclaw/workspace/github/nctto/mytzuko`
+- `curl -I http://127.0.0.1:3102` returned `HTTP/1.1 200 OK`
+- The wrapper failure was therefore a false negative for preview health, not an app crash
+
+### Suggested Fix
+When a long-running preview start reports `SIGKILL` after logging `Ready`, immediately verify the target port and existing listener before retrying. Prefer explicit background/session handling for durable preview processes.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: github/nctto/mytzuko/package.json, .learnings/ERRORS.md
+- See Also: ERR-20260428-002, ERR-20260429-005
+
+### Resolution
+- **Resolved**: 2026-05-01T09:02:15-07:00
+- **Notes**: Confirmed the Mytzuko `next-server` remained healthy on port `3102`, so no restart or code change was needed.
+
+---
+
+## [ERR-20260501-003] cron_jobs_json_shape_and_croner_resolution
+
+**Logged**: 2026-05-01T21:39:00Z
+**Priority**: low
+**Status**: pending
+**Area**: config
+
+### Summary
+Two quick cron-maintenance probes failed because `~/.openclaw/cron/jobs.json` is an object with a `jobs` array, not a raw array, and because the bundled `croner` package is only resolvable from OpenClaw's installed node_modules path.
+
+### Error
+```
+AttributeError: 'str' object has no attribute 'get'
+Cannot find module 'croner'
+```
+
+### Context
+- Operation attempted: summarize and reschedule OpenClaw cron jobs from the local JSON store
+- The first parser assumed the JSON root was a list of jobs
+- The first Node probe assumed `croner` was available from the workspace module path
+- The working approach was to read `data.jobs` and require `/opt/homebrew/lib/node_modules/openclaw/node_modules/croner`
+
+### Suggested Fix
+When scripting against OpenClaw cron locally, treat `jobs.json` as `{ version, jobs[] }` and import bundled dependencies from the installed OpenClaw path instead of assuming workspace-local resolution.
+
+### Metadata
+- Reproducible: yes
+- Related Files: /Users/rfcku/.openclaw/cron/jobs.json, .learnings/ERRORS.md
+
+---
