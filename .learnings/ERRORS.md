@@ -941,3 +941,123 @@ When scripting against OpenClaw cron locally, treat `jobs.json` as `{ version, j
 - Related Files: /Users/rfcku/.openclaw/cron/jobs.json, .learnings/ERRORS.md
 
 ---
+## [ERR-20260502-001] curl-path
+
+**Logged**: 2026-05-02T15:36:10Z
+**Priority**: low
+**Status**: pending
+**Area**: infra
+
+### Summary
+A Ditto smoke-test command failed because `curl` was not on PATH in this shell.
+
+### Error
+```
+zsh:11: command not found: curl
+zsh:12: command not found: awk
+```
+
+### Context
+- Command attempted: shell script using `curl` and `awk` by bare command name inside OpenClaw exec
+- Environment: macOS host shell under OpenClaw
+- Follow-up approach: use absolute tool paths like `/usr/bin/curl` and `/usr/bin/awk` when PATH looks minimal
+
+### Suggested Fix
+Prefer absolute paths for common system binaries in OpenClaw exec scripts when PATH-dependent failures appear.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: .learnings/ERRORS.md
+
+---
+## [ERR-20260502-002] playwright_waitforurl_timeout
+
+**Logged**: 2026-05-02T16:22:00Z
+**Priority**: high
+**Status**: pending
+**Area**: frontend
+
+### Summary
+A Ditto browser smoke test timed out waiting for login to navigate back to `https://ditto.local/`, which confirmed the UI auth flow was still broken even after the backend `/v1` fix deployed.
+
+### Error
+```
+page.waitForURL: Timeout 30000ms exceeded.
+waiting for navigation to "https://ditto.local/" until "load"
+```
+
+### Context
+- Operation attempted: Playwright smoke test for `login -> redirect/home` on `ditto.local`
+- Relevant upstream state: `api.ditto.local/v1` had already been revalidated and was returning healthy auth and user responses with a valid token
+- Observed frontend behavior around the same investigation: the bundle exposed `API URL: undefined` and auth requests were hitting same-origin frontend routes instead of `https://api.ditto.local/v1`
+- This failure strengthened the conclusion that the remaining blocker is frontend build/runtime wiring, not the restored backend API
+
+### Suggested Fix
+Rebuild or rewire the Ditto UI with `NEXT_PUBLIC_API_URL=https://api.ditto.local/v1` available at build time, then rerun the full browser smoke test.
+
+### Metadata
+- Reproducible: yes
+- Related Files: /Users/rfcku/Documents/BishopVault/Projects/Ditto/Hallazgo UI auth local 2026-05-02.md
+
+---
+## [ERR-20260502-003] ditto_login_ui_exception
+
+**Logged**: 2026-05-02T16:22:30Z
+**Priority**: high
+**Status**: pending
+**Area**: frontend
+
+### Summary
+The Ditto login page returned `200` responses for its RSC requests but still fell into an uncaught exception, leaving the UI unable to complete login.
+
+### Error
+```
+response 200 https://ditto.local/auth/login?_rsc=...
+response 200 https://ditto.local/auth/login?_rsc=...
+node:internal/process/promises:332 triggerUncaughtException(err, true /* fromPromise */)
+```
+
+### Context
+- Operation attempted: browser automation against `https://ditto.local/auth/login`
+- The login page itself loaded, so the failure was not simple reachability or TLS
+- Combined with `POST https://ditto.local/auth/authorize -> 404` and `GET https://ditto.local/users/me -> 404`, the evidence points to a broken frontend auth configuration or compiled bundle rather than a dead backend endpoint
+
+### Suggested Fix
+Inspect the real UI source or build pipeline for the active `vora-web` image, fix the API base URL wiring, and capture the browser console and network trace again after rebuilding.
+
+### Metadata
+- Reproducible: yes
+- Related Files: /Users/rfcku/Documents/BishopVault/Projects/Ditto/Hallazgo UI auth local 2026-05-02.md
+
+---
+## [ERR-20260502-004] docker_buildx_imagetools_orphan_after_exec_sigkill
+
+**Logged**: 2026-05-02T09:34:00-07:00
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+An async `docker buildx imagetools inspect ghcr.io/rfcku/vora-web:main` surfaced as `signal SIGKILL` with no captured output, but the orphaned `docker` and `docker-buildx` processes kept running until manually killed.
+
+### Error
+```text
+Exec failed (gentle-f, signal SIGKILL)
+(no output recorded)
+```
+
+### Context
+- Operation attempted: inspect the remote `ghcr.io/rfcku/vora-web:main` image while debugging the local Ditto/Vora auth issue
+- After the exec-event failure, `process list` showed `gentle-fjord` failed and `process poll` confirmed `SIGKILL`
+- `ps` showed orphaned PID `64805` (`docker buildx imagetools inspect ...`) with child PID `64809` (`docker-buildx ...`) still sleeping under parent PID `1`
+- Manual `kill -9 64805 64809` was required to clean up the stale inspection job
+
+### Suggested Fix
+When an async one-shot Docker inspection reports `SIGKILL` with no log output, immediately check for orphaned `docker` or `docker-buildx` processes and clean them up before retrying. Prefer a bounded foreground run for quick image inspection tasks so failures return real output instead of leaving background stragglers.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: .learnings/ERRORS.md
+- See Also: ERR-20260428-002
+
+---
