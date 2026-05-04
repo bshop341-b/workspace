@@ -37,4 +37,10 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
+## Docker on this host
+
+- Detached `docker build`, `docker pull`, and `docker buildx imagetools inspect` runs can surface as `SIGKILL` with little or no useful output.
+- Prefer bounded foreground Docker checks when diagnosing image/build issues so the cwd, full command, and failure point are preserved.
+- After an async Docker failure, check for orphaned `docker` or `docker-buildx` processes before retrying.
+
 Add whatever helps you do your job. This is your cheat sheet.

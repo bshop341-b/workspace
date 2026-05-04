@@ -1061,3 +1061,306 @@ When an async one-shot Docker inspection reports `SIGKILL` with no log output, i
 - See Also: ERR-20260428-002
 
 ---
+## [ERR-20260503-001] lumenforge_preview_sigkill_false_negative
+
+**Logged**: 2026-05-03T07:08:37-07:00
+**Priority**: low
+**Status**: resolved
+**Area**: infra
+
+### Summary
+An async `npm start -- --hostname 0.0.0.0 --port 3104` for `github/bshop341-b/lumenforge` surfaced as `signal SIGKILL` after Next.js reported `Ready`, but the detached `next-server` kept serving port `3104`.
+
+### Error
+```text
+Exec failed (mellow-l, signal SIGKILL) :: > nctto@0.1.0 start
+> next start --hostname 0.0.0.0 --port 3104
+▲ Next.js 16.1.6 - Local: http://localhost:3104
+- Network: http://0.0.0.0:3104
+✓ Starting...
+✓ Ready in 468ms
+```
+
+### Context
+- Operation attempted: start the local preview for the `nctto` package in `github/bshop341-b/lumenforge`
+- Verification after the async failure showed PID `50494` (`next-server v16.1.6`) still listening on `3104`
+- `lsof -a -p 50494 -d cwd` resolved the process cwd to `/Users/rfcku/.openclaw/workspace/github/bshop341-b/lumenforge`
+- `curl -I http://127.0.0.1:3104` returned `HTTP/1.1 200 OK`
+- The exec-event therefore reported a false negative for preview health, not an app crash
+
+### Suggested Fix
+When an async preview start reports `SIGKILL` after logging `Ready`, immediately verify the target port and process cwd before retrying. Prefer explicit background/session handling for durable Next.js preview processes.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: github/bshop341-b/lumenforge/package.json, .learnings/ERRORS.md
+- See Also: ERR-20260429-005, ERR-20260501-002
+
+### Resolution
+- **Resolved**: 2026-05-03T07:08:37-07:00
+- **Notes**: Confirmed the Lumenforge `next-server` remained healthy on port `3104`, so no restart or code change was needed.
+
+---
+## [ERR-20260503-002] medio_punto_preview_sigkill_false_negative
+
+**Logged**: 2026-05-03T08:03:34-07:00
+**Priority**: low
+**Status**: resolved
+**Area**: infra
+
+### Summary
+An async `npm start` for `github/rfcku/medio-punto` surfaced as `signal SIGKILL` after Next.js reported `Ready`, but the detached `next-server` kept serving port `3101`.
+
+### Error
+```text
+Exec failed (mild-orb, signal SIGKILL) :: > medio-punto@0.1.0 start
+> next start
+▲ Next.js 14.1.0 - Local: http://localhost:3101
+✓ Ready in 140ms
+```
+
+### Context
+- Operation attempted: start the local preview for `github/rfcku/medio-punto`
+- Verification after the async failure showed PID `51988` (`next-server`) still listening on `3101`
+- `lsof -a -p 51988 -d cwd` resolved the process cwd to `/Users/rfcku/.openclaw/workspace/github/rfcku/medio-punto`
+- `curl -I http://127.0.0.1:3101` returned `HTTP/1.1 200 OK`
+- The exec-event therefore reported a false negative for preview health, not an app crash
+
+### Suggested Fix
+When an async preview start reports `SIGKILL` after logging `Ready`, immediately verify the target port and process cwd before retrying. Prefer explicit background/session handling for durable Next.js preview processes.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: github/rfcku/medio-punto/package.json, .learnings/ERRORS.md
+- See Also: ERR-20260429-005, ERR-20260501-002, ERR-20260503-001
+
+### Resolution
+- **Resolved**: 2026-05-03T08:03:34-07:00
+- **Notes**: Confirmed the Medio Punto `next-server` remained healthy on port `3101`, so no restart or code change was needed.
+
+---
+## [ERR-20260503-001] exec.elevated
+
+**Logged**: 2026-05-03T15:38:51Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+Elevated exec is unavailable in exec-event heartbeat sessions, so `/etc/hosts` updates cannot be performed from this runtime.
+
+### Error
+```
+elevated is not available right now (runtime=direct).
+Failing gates: allowFrom (tools.elevated.allowFrom.<provider> / agents.list[].tools.elevated.allowFrom.<provider>)
+Context: provider=exec-event session=agent:main:cron:62c86454-1f85-4f4d-9c06-3be649c4b404:heartbeat
+```
+
+### Context
+- Operation attempted: `./scripts/add-local-hosts.sh 172.18.255.200 medio-punto.local mytzuko.local stitching-octopus.local nctto.local`
+- Workdir: `/Users/rfcku/.openclaw/workspace/github/argocd`
+- Goal: unblock normal browser access for local preview sites without `--resolve`
+- Relevant doc: `github/argocd/workloads/local-sites/README.md`
+
+### Suggested Fix
+Run the hosts update from a user-approved elevated session or outside exec-event heartbeat runtime, or enable elevated exec for the `exec-event` provider if that is an intended capability.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/argocd/workloads/local-sites/README.md
+
+---
+## [ERR-20260503-002] exec.python
+
+**Logged**: 2026-05-03T16:08:55Z
+**Priority**: low
+**Status**: pending
+**Area**: infra
+
+### Summary
+The  binary is absent on this host; use  for quick local checks.
+
+### Error
+
+
+### Context
+- Operation attempted: inline HTML inspection script against 
+- Workdir: 
+- Goal: confirm whether the Mytzuko local preview still exposed legacy booking form markers
+
+### Suggested Fix
+Default to  instead of  when running ad hoc scripts on this macOS host.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+
+---
+## [ERR-20260503-002] exec.python
+
+**Logged**: 2026-05-03T16:10:00Z
+**Priority**: low
+**Status**: pending
+**Area**: infra
+
+### Summary
+The `python` binary is absent on this host, use `python3` for quick local checks.
+
+### Error
+```
+zsh:1: command not found: python
+```
+
+### Context
+- Operation attempted: inline HTML inspection script against `http://127.0.0.1:3102`
+- Workdir: `/Users/rfcku/.openclaw/workspace`
+- Goal: confirm whether the Mytzuko local preview still exposed legacy booking form markers
+
+### Suggested Fix
+Default to `python3` instead of `python` when running ad hoc scripts on this macOS host.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+
+---
+
+## [ERR-20260503-003] exec.heredoc_backticks
+
+**Logged**: 2026-05-03T16:11:00Z
+**Priority**: low
+**Status**: pending
+**Area**: docs
+
+### Summary
+Backticks inside a double-quoted shell command were expanded before a heredoc append, which broke the logging command.
+
+### Error
+```
+zsh:1: command not found: python
+zsh:2: command not found: zsh:1:
+zsh:1: no such file or directory: http://127.0.0.1:3102
+zsh:1: permission denied: /Users/rfcku/.openclaw/workspace
+zsh:1: command not found: python
+```
+
+### Context
+- Operation attempted: append a markdown error entry to `.learnings/ERRORS.md`
+- Cause: the surrounding shell command used double quotes, so backticks in markdown content triggered command substitution before the heredoc ran
+
+### Suggested Fix
+When appending markdown that contains backticks, use a single-quoted heredoc delimiter and avoid wrapping the full shell snippet in double quotes with raw backticks inside.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md
+- See Also: ERR-20260426-005
+
+---
+
+## [ERR-20260503-004] docker-pull-hang
+
+**Logged**: 2026-05-03T16:24:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+Docker image resolution for `node:22-alpine` hung with no progress output in this runtime, so container builds for Stitching Octopus could not be verified even though the app's local Next.js production build succeeded.
+
+### Error
+```text
+#2 [internal] load metadata for docker.io/library/node:22-alpine
+Exec failed (marine-n, signal SIGKILL)
+docker pull node:22-alpine  -> no output until harness timeout / SIGKILL
+```
+
+### Context
+- Operation attempted: `docker build -t stitchingoctopus:test .` in `github/rfcku/stitchingoctopus`
+- A direct `npm run build` in the same repo completed successfully, so the app code itself was not the blocker
+- Reproduction also hung for `docker pull node:22-alpine` and `docker buildx imagetools inspect node:22-alpine`
+- Host-side network reachability to `https://registry-1.docker.io/v2/` was fine, which points more toward Docker Desktop / daemon image-resolution behavior than the project files
+
+### Suggested Fix
+Treat this as a Docker runtime issue first. If container verification is required, troubleshoot Docker Desktop image pull behavior or use a preloaded/local base image before spending more time on app code.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/rfcku/stitchingoctopus/Dockerfile, github/rfcku/stitchingoctopus/.dockerignore
+- See Also: ERR-20260428-002
+
+---
+## [ERR-20260503-005] kanban-backend-docker-metadata-hang
+
+**Logged**: 2026-05-03T16:33:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+The `kanban-dashboard-backend` Docker build still hung at image metadata resolution in this runtime even after removing the external Dockerfile frontend dependency from the repo Dockerfile.
+
+### Error
+```text
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+Process exited with signal SIGKILL.
+
+#2 [internal] load metadata for docker.io/library/node:20-bookworm-slim
+Process exited with signal SIGKILL.
+```
+
+### Context
+- Operation attempted: `docker build --progress=plain -t local/kanban-dashboard-backend:test .` in `github/bshop341-b/kanban-dashboard-backend`
+- The original Dockerfile used `# syntax=docker/dockerfile:1`; removing that line avoided the initial frontend-image resolution step
+- The Dockerfile was also tightened from `npm install --omit=dev` to `npm ci --omit=dev` because a lockfile is present
+- Even after that repo-level cleanup, Docker still stalled while loading metadata for `node:20-bookworm-slim`, which points back to the local Docker runtime rather than the application files
+- A fallback `DOCKER_BUILDKIT=0 docker build ...` also ended in `SIGKILL` after only printing the legacy-builder deprecation warning, so this is not limited to BuildKit frontend resolution
+- Orphaned `docker build` / `docker buildx imagetools inspect` processes from earlier SIGKILLs had to be cleaned up manually
+
+### Suggested Fix
+Keep the Dockerfile simplification, but treat the remaining failure as a Docker daemon or registry-resolution problem. Before changing app code further, verify Docker Desktop can resolve/pull standard images cleanly or use a preloaded local base image.
+
+### Metadata
+- Reproducible: yes
+- Related Files: github/bshop341-b/kanban-dashboard-backend/Dockerfile, .learnings/ERRORS.md
+- See Also: ERR-20260428-002, ERR-20260502-004, ERR-20260503-004
+
+---
+## [ERR-20260503-006] async_docker_build_sigkill_cluster
+
+**Logged**: 2026-05-03T16:36:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+A follow-up cluster of detached Docker build sessions also ended in `SIGKILL`, reinforcing that Docker verification is currently unreliable in this runtime and that async builds are surfacing too little context to diagnose precisely.
+
+### Error
+```text
+Exec failed (amber-sa, signal SIGKILL)
+Exec failed (good-sum, signal SIGKILL)
+Exec failed (nova-sum, signal SIGKILL)
+Exec failed (clear-sl, signal SIGKILL)
+
+# clear-sl excerpt
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0 environment variable.
+```
+
+### Context
+- Operation attempted: previously launched async Docker build checks after earlier metadata-resolution hangs
+- Surfaced output showed multiple builds using the `desktop-linux` Docker driver, with at least two runs loading small Dockerfiles (`283B` and `248B`) before being killed
+- One follow-up used the legacy builder path with `DOCKER_BUILDKIT=0` and still ended in `SIGKILL`, so the instability is not limited to BuildKit-only flows
+- By the time this completion event arrived, no orphaned `docker` / `docker-buildx` processes were still running
+- The exact original commands and working directories were not recoverable from the exec-event payload alone
+
+### Suggested Fix
+Avoid detached one-shot Docker builds when the goal is diagnosis. Run bounded foreground checks from the target repo so the cwd, full command, and failure point are preserved, and continue treating this as a host Docker runtime issue before changing more application code.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: .learnings/ERRORS.md
+- See Also: ERR-20260502-004, ERR-20260503-004, ERR-20260503-005
+
+---

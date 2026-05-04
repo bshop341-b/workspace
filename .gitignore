@@ -7,3 +7,4 @@ entities.json
 
 # Local scratch/worktrees
 tmp/
+.cache/
