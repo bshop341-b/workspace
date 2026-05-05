@@ -974,7 +974,7 @@ Prefer absolute paths for common system binaries in OpenClaw exec scripts when P
 
 **Logged**: 2026-05-02T16:22:00Z
 **Priority**: high
-**Status**: pending
+**Status**: resolved
 **Area**: frontend
 
 ### Summary
@@ -999,12 +999,16 @@ Rebuild or rewire the Ditto UI with `NEXT_PUBLIC_API_URL=https://api.ditto.local
 - Reproducible: yes
 - Related Files: /Users/rfcku/Documents/BishopVault/Projects/Ditto/Hallazgo UI auth local 2026-05-02.md
 
+### Resolution
+- **Resolved**: 2026-05-04T15:58:00Z
+- **Notes**: A fresh Playwright smoke check on `ditto.local` now reaches `https://api.ditto.local/v1/auth/register` and `https://api.ditto.local/v1/auth/authorize`, lands on `https://ditto.local/`, and preserves `token`, `user`, and `id` in localStorage after reload. See `/Users/rfcku/.openclaw/workspace/tmp/ditto-login-check.log` and `/Users/rfcku/.openclaw/workspace/tmp/ditto-login-verify.log`.
+
 ---
 ## [ERR-20260502-003] ditto_login_ui_exception
 
 **Logged**: 2026-05-02T16:22:30Z
 **Priority**: high
-**Status**: pending
+**Status**: resolved
 **Area**: frontend
 
 ### Summary
@@ -1028,6 +1032,10 @@ Inspect the real UI source or build pipeline for the active `vora-web` image, fi
 ### Metadata
 - Reproducible: yes
 - Related Files: /Users/rfcku/Documents/BishopVault/Projects/Ditto/Hallazgo UI auth local 2026-05-02.md
+
+### Resolution
+- **Resolved**: 2026-05-04T15:59:00Z
+- **Notes**: Re-ran the flow with corrected Playwright scripts and confirmed the login page now posts to `https://api.ditto.local/v1/auth/authorize`, receives `200`, redirects to the homepage, and leaves the session in localStorage. The earlier uncaught-exception conclusion is no longer supported by the current local repro.
 
 ---
 ## [ERR-20260502-004] docker_buildx_imagetools_orphan_after_exec_sigkill
@@ -1362,5 +1370,181 @@ Avoid detached one-shot Docker builds when the goal is diagnosis. Run bounded fo
 - Reproducible: unknown
 - Related Files: .learnings/ERRORS.md
 - See Also: ERR-20260502-004, ERR-20260503-004, ERR-20260503-005
+
+---
+## [ERR-20260504-001] async_node_curl_sigterm
+
+**Logged**: 2026-05-04T15:01:00Z
+**Priority**: low
+**Status**: pending
+**Area**: infra
+
+### Summary
+A detached exec against node `grand-pi` surfaced only as a `SIGTERM` on session `grand-pine`, with no captured output beyond a truncated `curl /dev/null` summary.
+
+### Error
+```text
+Exec failed (grand-pi, signal SIGTERM)
+Process exited with signal SIGTERM.
+```
+
+### Context
+- Operation attempted: previously launched async exec session `grand-pine`
+- `process list` showed the command summary only as `curl /dev/null`
+- `process log` and `process poll` returned no command output, so the target URL, cwd, and reason for termination were not recoverable from the completion event alone
+- The exec-event explicitly asked for internal handling only, so no user-facing follow-up was sent
+
+### Suggested Fix
+For detached node health checks, include the full target in the command string and emit one short startup line before blocking so later `SIGTERM` events preserve enough context to diagnose whether the process timed out, was canceled, or hit a remote-side failure.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: .learnings/ERRORS.md
+- See Also: ERR-20260428-001
+
+---
+## [ERR-20260504-002] medio_punto_preview_sigkill_false_negative_repeat
+
+**Logged**: 2026-05-04T15:15:30Z
+**Priority**: low
+**Status**: resolved
+**Area**: infra
+
+### Summary
+Another async `npm start` for `github/rfcku/medio-punto` surfaced as `signal SIGKILL` after Next.js reported `Ready`, but the detached `next-server` remained healthy on port `3101`.
+
+### Error
+```text
+Exec failed (rapid-sh, signal SIGKILL) :: > medio-punto@0.1.0 start
+> next start
+▲ Next.js 14.1.0 - Local: http://localhost:3101
+✓ Ready in 171ms
+```
+
+### Context
+- Operation attempted: start or keep alive the local preview for `github/rfcku/medio-punto`
+- Verification after the async failure showed PID `11259` still listening on `3101`
+- `lsof -a -p 11259 -d cwd` resolved the process cwd to `/Users/rfcku/.openclaw/workspace/github/rfcku/medio-punto`
+- `curl -I http://127.0.0.1:3101` returned `HTTP/1.1 200 OK`
+- This is the same false-negative pattern as ERR-20260503-002, so the preview did not need a restart
+
+### Suggested Fix
+Treat detached Next.js `SIGKILL` completion events that arrive after `✓ Ready` as suspicious but not definitive. Verify the port and process cwd before restarting or telling the user the app died.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: github/rfcku/medio-punto/package.json, .learnings/ERRORS.md
+- See Also: ERR-20260503-002
+
+### Resolution
+- **Resolved**: 2026-05-04T15:15:30Z
+- **Notes**: Confirmed the Medio Punto preview remained healthy on port `3101`, so no corrective action or user-facing alert was needed.
+
+---
+## [ERR-20260504-003] playwright_ad_hoc_runner_mismatch
+
+**Logged**: 2026-05-04T16:00:00Z
+**Priority**: low
+**Status**: resolved
+**Area**: tests
+
+### Summary
+Several ad hoc Ditto browser-check commands failed because the temporary Playwright harness mixed incompatible runner imports and CLI flags.
+
+### Error
+```text
+Error: No tests found.
+error: unknown option '--test-dir=tmp'
+Error: Cannot find module 'playwright/test'
+```
+
+### Context
+- Operation attempted: run a quick local browser smoke test for `ditto.local` from the temp `pwcheck` sandbox
+- Failed attempts included invoking `npx @playwright/test` with arguments that matched no tests, passing an unsupported `--test-dir=tmp` flag, and importing `playwright/test` instead of `@playwright/test`
+- The reliable fallback in this sandbox was a plain Node script with `require('playwright')`, which then verified register, reload, and login successfully
+
+### Suggested Fix
+For one-off local smoke tests in the temp sandbox, prefer `node <script>.js` with `require('playwright')` unless a proper `@playwright/test` project and test file pattern are already in place.
+
+### Metadata
+- Reproducible: yes
+- Related Files: tmp/ditto-login-check.spec.js, tmp/ditto-login-check.js, tmp/pwcheck/package.json
+- See Also: ERR-20260502-002, ERR-20260502-003
+
+### Resolution
+- **Resolved**: 2026-05-04T16:00:00Z
+- **Notes**: Switched the check to direct Node scripts under `tmp/pwcheck` and completed the auth verification successfully.
+
+---
+## [ERR-20260504-004] detached_home_scan_orphan_find
+
+**Logged**: 2026-05-04T16:09:30Z
+**Priority**: low
+**Status**: resolved
+**Area**: infra
+
+### Summary
+A small cluster of detached sessions surfaced only as `SIGTERM` or `SIGKILL`, and one broad `find /Users/rfcku` scan was still running orphaned under PID 1 after the exec-event failure.
+
+### Error
+```text
+Exec failed (vivid-ri, signal SIGKILL)
+Exec failed (amber-bl, signal SIGTERM)
+Exec failed (amber-ot, signal SIGTERM)
+Process exited with signal SIGKILL.
+Process exited with signal SIGTERM.
+```
+
+### Context
+- Operation attempted: previously launched async exec sessions `vivid-ridge`, `amber-bloom`, and `amber-otter`
+- `process list` only preserved truncated summaries, showing two sessions as `find /Users/rfcku` and one as `python3 <<'PY'`
+- `process log` produced no output for any of the three sessions, so the exact intent of the Python job and the reason for termination were not recoverable from the completion event alone
+- Follow-up host inspection found an orphaned process: `find /Users/rfcku -maxdepth 5 \( -name go.mod -o -name .git \)` running with `PPID 1`
+- The orphaned `find` was terminated manually with `kill 14964`
+- The exec-event explicitly asked for internal handling only, so no user-facing follow-up was sent
+
+### Suggested Fix
+Avoid detached broad home-directory scans when a workspace-scoped search would do. For async discovery jobs, print one short startup line with the exact search root and query, and check for orphaned child processes when the wrapper reports only a signal with no logs.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: .learnings/ERRORS.md
+- See Also: ERR-20260428-001, ERR-20260502-004, ERR-20260504-001
+
+### Resolution
+- **Resolved**: 2026-05-04T16:09:30Z
+- **Notes**: Confirmed the detached sessions had no preserved logs, found the remaining orphaned `find` under PID 1, killed it, and kept the event internal as instructed.
+
+---
+## [ERR-20260504-001] ditto-heartbeat-api-smoke
+
+**Logged**: 2026-05-04T17:04:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: backend
+
+### Summary
+Fresh Ditto heartbeat smoke setup hit an unexpected `/v1/auth/register` response shape and failed before creating test data.
+
+### Error
+```text
+Traceback (most recent call last):
+  File "<stdin>", line 39, in <module>
+  File "<stdin>", line 37, in register
+KeyError: 'data'
+```
+
+### Context
+- Command/operation attempted: inline Python smoke setup against `https://api.ditto.local/v1`
+- Expected register response shape: JSON object with `data.token` and `data.id`
+- Actual issue: response body did not contain top-level `data`
+- Summary output only, no tokens logged
+
+### Suggested Fix
+Capture and inspect the actual register response body before assuming the old response shape, then harden the smoke helper to tolerate validation or alternate success envelopes.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: /Users/rfcku/.openclaw/workspace/tmp/ditto-heartbeat-smoke.json
 
 ---
