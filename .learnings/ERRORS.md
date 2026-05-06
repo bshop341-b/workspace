@@ -1441,6 +1441,46 @@ Treat detached Next.js `SIGKILL` completion events that arrive after `✓ Ready`
 - **Notes**: Confirmed the Medio Punto preview remained healthy on port `3101`, so no corrective action or user-facing alert was needed.
 
 ---
+## [ERR-20260505-001] nctto_preview_sigkill_false_negative
+
+**Logged**: 2026-05-05T15:03:48Z
+**Priority**: low
+**Status**: resolved
+**Area**: infra
+
+### Summary
+Another async `npm start` for `github/bshop341-b/lumenforge` surfaced as `signal SIGKILL` after Next.js reported `Ready`, but the detached `next-server` remained healthy on port `3104`.
+
+### Error
+```text
+Exec failed (rapid-cr, signal SIGKILL) :: > nctto@0.1.0 start
+> next start
+▲ Next.js 16.1.6 - Local: http://localhost:3104
+- Network: http://172.18.255.200:3104
+✓ Starting...
+✓ Ready in 235ms
+```
+
+### Context
+- Operation attempted: start or keep alive the local preview for `github/bshop341-b/lumenforge`
+- Verification after the async failure showed PID `45074` (`node`) still listening on `3104`
+- `lsof -a -p 45074 -d cwd` resolved the process cwd to `/Users/rfcku/.openclaw/workspace/github/bshop341-b/lumenforge`
+- `curl -I http://127.0.0.1:3104` returned `HTTP/1.1 200 OK`
+- This matches the earlier detached Next.js false-negative pattern, so the preview did not need a restart
+
+### Suggested Fix
+Treat detached Next.js `SIGKILL` completion events that arrive after `✓ Ready` as suspicious but not definitive. Verify the listening port and process cwd before restarting or reporting a crash.
+
+### Metadata
+- Reproducible: unknown
+- Related Files: github/bshop341-b/lumenforge/package.json, .learnings/ERRORS.md
+- See Also: ERR-20260503-001, ERR-20260503-002, ERR-20260504-001
+
+### Resolution
+- **Resolved**: 2026-05-05T15:03:48Z
+- **Notes**: Confirmed the Lumenforge preview stayed healthy on port `3104`, so no corrective action or user-facing alert was needed.
+
+---
 ## [ERR-20260504-003] playwright_ad_hoc_runner_mismatch
 
 **Logged**: 2026-05-04T16:00:00Z
@@ -1546,5 +1586,55 @@ Capture and inspect the actual register response body before assuming the old re
 ### Metadata
 - Reproducible: unknown
 - Related Files: /Users/rfcku/.openclaw/workspace/tmp/ditto-heartbeat-smoke.json
+
+---
+## [ERR-20260505-002] clustered_next_preview_sigkill_false_negative
+
+**Logged**: 2026-05-05T17:27:30Z
+**Priority**: low
+**Status**: resolved
+**Area**: infra
+
+### Summary
+Two async Next.js preview sessions surfaced as `signal SIGKILL` after `next start` reached `Ready`, but both detached servers stayed healthy on their target ports.
+
+### Error
+```text
+Exec failed (quick-pr, signal SIGKILL) :: > mytzuko@0.1.0 build
+... Finalizing page optimization ...
+> mytzuko@0.1.0 start
+> next start
+▲ Next.js 16.1.6
+- Local: http://localhost:3102
+✓ Ready in 235ms
+
+Exec failed (young-em, signal SIGKILL) :: > stiching-octopus@0.1.0 build
+... Finalizing page optimization ...
+> stiching-octopus@0.1.0 start
+> next start
+▲ Next.js 16.2.4
+- Local: http://localhost:3103
+✓ Ready in 67ms
+```
+
+### Context
+- Operation attempted: previously launched async preview builds for `github/nctto/mytzuko` and `github/rfcku/stitchingoctopus`
+- Follow-up verification showed PID `42494` still listening on `3102` with cwd `/Users/rfcku/.openclaw/workspace/github/nctto/mytzuko`
+- Follow-up verification showed PID `42479` still listening on `3103` with cwd `/Users/rfcku/.openclaw/workspace/github/rfcku/stitchingoctopus`
+- `curl -I http://127.0.0.1:3102/` returned `HTTP/1.1 200 OK`
+- `curl -I http://127.0.0.1:3103/` returned `HTTP/1.1 200 OK`
+- The exec-event explicitly asked for internal handling only, so no user-facing follow-up was sent
+
+### Suggested Fix
+Treat detached Next.js `SIGKILL` completion events that arrive after `✓ Ready` as likely wrapper false negatives. Verify the port and process cwd before restarting, and prefer explicit durable background/session handling when a preview server is meant to stay up.
+
+### Metadata
+- Reproducible: yes
+- Related Files: .learnings/ERRORS.md, github/nctto/mytzuko/package.json, github/rfcku/stitchingoctopus/package.json
+- See Also: ERR-20260505-001, ERR-20260504-003, ERR-20260504-002
+
+### Resolution
+- **Resolved**: 2026-05-05T17:27:30Z
+- **Notes**: Confirmed both detached Next.js servers were still serving on ports `3102` and `3103`, so no restart or user interrupt was needed.
 
 ---

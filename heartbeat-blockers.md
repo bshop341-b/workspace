@@ -7,7 +7,7 @@
   - The remaining blocker is frontend ownership and rebuild path: there is still no canonical trending view, and the community page still throws CORS on `GET /v1/subs/check/:id?type=1`.
   - Missing items to ask or unblock next: identify the real source/pipeline for `ghcr.io/rfcku/vora-web:main`, rebuild the UI with a proper trending route instead of redirects, and fix the `subs/check` CORS wiring from a real frontend source.
 
-- 2026-05-04 07:57 America/Tijuana: Medio Punto public rollout is still blocked.
+- 2026-05-05 08:42 America/Tijuana: Medio Punto public rollout is still blocked.
   - `npm run build` passed again in `github/rfcku/medio-punto`, and the local preview on `127.0.0.1:3101` is back to `HTTP 200`.
   - `https://medio-punto.local/` is healthy again when smoke-tested with `curl -k --resolve medio-punto.local:443:127.0.0.1`, so the host-run preview path is working.
   - `medio-punto.com` still forwards through Namecheap (`302` to `www`) and apex HTTPS still times out.
