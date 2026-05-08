@@ -1,0 +1,1 @@
+Fix for #213: Added robust shell completion handling for malformed config.toml.
