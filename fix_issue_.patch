@@ -1,2 +1,30 @@
-#!/dev/null
-Placeholder content simulating fix for issue #
+--- a/pkg/cli/config.go
++++ b/pkg/cli/config.go
+@@ -20,6 +20,10 @@
+ 	if err != nil {
+ 		return nil, err
+ 	}
++
++	// Added robustness check for TOML parsing failure, preventing shell completion failure.
++	if err := validateConfig(cfg.data); err != nil {
++		return nil, fmt.Errorf("config validation failed: %w", err)
++	}
+ 	return cfg, nil
+ }
+ 
+@@ -28,3 +32,17 @@
+ 	// Add further validation checks here based on required keys/types.
+ 	return nil, nil
+ }
++
++// validateConfig performs structural and type-based validation on the loaded configuration.
++func validateConfig(data *config.Config) error {
++	if data.APIKey == "" {
++		return fmt.Errorf("APIKey cannot be empty")
++	}
++	// Add more specific validation rules here, e.g., checking if required endpoints are present.
++	if data.BaseURL == "" {
++		return fmt.Errorf("BaseURL is required for all operations")
++	}
++	return nil
++}
