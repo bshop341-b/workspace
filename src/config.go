@@ -1,1 +1,1 @@
-Validation added to config.toml parsing logic.
+Adding validation logic to config parsing.
