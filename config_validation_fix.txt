@@ -1,0 +1,1 @@
+# Fix for Issue #284: Validate --url before writing to config
