@@ -1,0 +1,2 @@
+# Changes applied to implement validation logic in config writing flow.
+Validation added for --url field before saving to config.toml
