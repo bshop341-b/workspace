@@ -1,0 +1,1 @@
+Fix: Added validation for --url field before writing to config.toml
